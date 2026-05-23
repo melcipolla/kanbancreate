@@ -222,7 +222,7 @@
     }
 
     .dash-card {
-      background-color: var(--bg-secondary);
+      background-color: var(--bg-secondary); /* Slightly different to contrast with root */
       border: 1px solid var(--border);
       padding: 1.5rem;
       display: flex;
@@ -557,7 +557,7 @@
         <div id="reg-error" class="error-msg"></div>
         <div class="form-group">
           <label>Nome Completo</label>
-          <input type="text" id="reg-name" placeholder="Joao da Silva" required>
+          <input type="text" id="reg-name" placeholder="João da Silva" required>
         </div>
         <div class="form-group">
           <label>Email</label>
@@ -577,7 +577,7 @@
     <header>
       <div class="header-logo">KANBAN_SYS</div>
       <div class="user-info">
-        <span id="user-name" style="color: var(--text-secondary);">Usuario</span>
+        <span id="user-name" style="color: var(--text-secondary);">Usuário</span>
         <button class="btn-logout" onclick="handleLogout()">SAIR</button>
       </div>
     </header>
@@ -586,24 +586,24 @@
       <!-- Dashboard -->
       <div class="dashboard">
         <div class="dash-card">
-          <div class="dash-icon">&#8721;</div>
+          <div class="dash-icon">∑</div>
           <div class="dash-info">
             <h3 id="count-total">0</h3>
             <p>Total de Tarefas</p>
           </div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.15)">&#9889;</div>
+          <div class="dash-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.15)">⚡</div>
           <div class="dash-info">
             <h3 id="count-doing">0</h3>
             <p>Em Andamento</p>
           </div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon" style="color: var(--success); background: rgba(34, 197, 94, 0.15)">&#10003;</div>
+          <div class="dash-icon" style="color: var(--success); background: rgba(34, 197, 94, 0.15)">✓</div>
           <div class="dash-info">
             <h3 id="count-done">0</h3>
-            <p>Concluidas</p>
+            <p>Concluídas</p>
           </div>
         </div>
         <div class="dash-card overdue">
@@ -649,7 +649,7 @@
         <!-- Done Column -->
         <div class="column">
           <div class="column-header">
-            <span>CONCLUIDO</span>
+            <span>CONCLUÍDO</span>
             <span class="task-count" id="count-done-col">0</span>
           </div>
           <div class="column-body" id="col-done" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'done')">
@@ -667,11 +667,11 @@
       <form id="task-form" onsubmit="saveTask(event)">
         <input type="hidden" id="task-id">
         <div class="form-group">
-          <label>Titulo *</label>
+          <label>Título *</label>
           <input type="text" id="task-title-input" required placeholder="Ex: Atualizar esquema do banco">
         </div>
         <div class="form-group">
-          <label>Descricao</label>
+          <label>Descrição</label>
           <textarea id="task-desc-input" rows="4" placeholder="Detalhes da tarefa..."></textarea>
         </div>
         <div style="display: flex; gap: 1rem;">
@@ -680,14 +680,14 @@
             <select id="task-status-input">
               <option value="todo">A Fazer</option>
               <option value="doing">Fazendo</option>
-              <option value="done">Concluido</option>
+              <option value="done">Concluído</option>
             </select>
           </div>
           <div class="form-group" style="flex: 1;">
             <label>Prioridade</label>
             <select id="task-priority-input">
               <option value="low">Baixa</option>
-              <option value="medium" selected>Media</option>
+              <option value="medium" selected>Média</option>
               <option value="high">Alta</option>
             </select>
           </div>
@@ -706,7 +706,7 @@
   </div>
 
   <script>
-    const API_URL = 'http://localhost:3000/api';
+    const API_URL = '/api';
     let currentTasks = [];
     let draggedTaskId = null;
 
@@ -762,7 +762,7 @@
           errEl.style.display = 'block';
         }
       } catch (err) {
-        errEl.innerText = 'Erro de rede. Verifique se o servidor esta rodando.';
+        errEl.innerText = 'Erro de rede. Verifique se o servidor está rodando.';
         errEl.style.display = 'block';
       }
     }
@@ -791,7 +791,7 @@
           errEl.style.display = 'block';
         }
       } catch (err) {
-        errEl.innerText = 'Erro de rede. Verifique se o servidor esta rodando.';
+        errEl.innerText = 'Erro de rede. Verifique se o servidor está rodando.';
         errEl.style.display = 'block';
       }
     }
@@ -820,7 +820,7 @@
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'flex';
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      document.getElementById('user-name').innerText = user.name || 'Usuario';
+      document.getElementById('user-name').innerText = user.name || 'Usuário';
     }
 
     // ----- API HELPER -----
@@ -839,10 +839,10 @@
         body: body ? JSON.stringify(body) : null
       });
 
-      // Se token expirar ou for invalido
+      // Se token expirar ou for inválido
       if (res.status === 401 || res.status === 403) {
         handleLogout();
-        throw new Error('Nao autorizado');
+        throw new Error('Não autorizado');
       }
       
       if (!res.ok) {
@@ -899,7 +899,7 @@
             ? new Date(task.dueDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) 
             : '--';
             
-          const priorityText = task.priority === 'low' ? 'baixa' : task.priority === 'medium' ? 'media' : 'alta';
+          const priorityText = task.priority === 'low' ? 'baixa' : task.priority === 'medium' ? 'média' : 'alta';
 
           card.innerHTML = `
             <div class="task-header">
@@ -909,18 +909,18 @@
                 ${task.isOverdue ? '<span class="badge badge-overdue">EM ATRASO</span>' : ''}
               </div>
             </div>
-            <div class="task-desc">${task.description || 'Nenhuma descricao fornecida.'}</div>
+            <div class="task-desc">${task.description || 'Nenhuma descrição fornecida.'}</div>
             <div class="task-footer">
               <div class="task-date ${task.isOverdue ? 'is-overdue' : ''}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 ${formattedDate}
               </div>
               <div class="task-actions">
-                <button class="action-btn" onclick="toggleComplete('${task.id}')" title="Alternar Conclusao">
-                  ${task.completed ? '&#8617;' : '&#10003;'}
+                <button class="action-btn" onclick="toggleComplete('${task.id}')" title="Alternar Conclusão">
+                  ${task.completed ? '↩' : '✓'}
                 </button>
-                <button class="action-btn" onclick="editTask('${task.id}')" title="Editar Tarefa">&#9998;</button>
-                <button class="action-btn delete" onclick="deleteTask('${task.id}')" title="Excluir Tarefa">&#10005;</button>
+                <button class="action-btn" onclick="editTask('${task.id}')" title="Editar Tarefa">✎</button>
+                <button class="action-btn delete" onclick="deleteTask('${task.id}')" title="Excluir Tarefa">✕</button>
               </div>
             </div>
           `;
@@ -981,7 +981,7 @@
         await apiCall(`/tasks/${id}/complete`, 'PATCH');
         await loadTasks();
       } catch (err) {
-        alert('Falha ao alternar conclusao');
+        alert('Falha ao alternar conclusão');
       }
     }
 

@@ -6,19 +6,19 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = 3000;
-const SECRET_KEY = 'super-secret-key-for-jwt-do-not-use-in-prod';
+const PORT = process.env.PORT || 3000;
+const SECRET_KEY = process.env.SECRET_KEY || 'super-secret-key-for-jwt-do-not-use-in-prod';
 
 app.use(cors());
 app.use(express.json());
-// Servir arquivos estaticos da pasta /public
+// Servir arquivos estáticos da pasta /public
 app.use(express.static(path.join(__dirname, 'public')));
 
 const USERS_FILE = path.join(__dirname, 'users.json');
 const TASKS_FILE = path.join(__dirname, 'tasks.json');
 const REVOKED_TOKENS_FILE = path.join(__dirname, 'revoked_tokens.json');
 
-// Helper para criar os arquivos caso nao existam
+// Helper para criar os arquivos caso não existam
 function ensureFileExists(filePath, defaultData) {
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
@@ -44,19 +44,19 @@ function writeJSON(filePath, data) {
 }
 
 // -----------------------------------------------------
-// ROTAS DE AUTENTICACAO
+// ROTAS DE AUTENTICAÇÃO
 // -----------------------------------------------------
 
 // Cadastro
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Nome, email e senha sao obrigatorios' });
+    return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
   }
 
   const users = readJSON(USERS_FILE);
   if (users.find(u => u.email === email)) {
-    return res.status(400).json({ error: 'O email ja existe' });
+    return res.status(400).json({ error: 'O email já existe' });
   }
 
   try {
@@ -70,9 +70,9 @@ app.post('/api/auth/register', async (req, res) => {
     };
     users.push(newUser);
     writeJSON(USERS_FILE, users);
-    res.status(201).json({ message: 'Usuario registrado com sucesso' });
+    res.status(201).json({ message: 'Usuário registrado com sucesso' });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao registrar usuario' });
+    res.status(500).json({ error: 'Erro ao registrar usuário' });
   }
 });
 
@@ -80,23 +80,23 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email e senha sao obrigatorios' });
+    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
   }
 
   const users = readJSON(USERS_FILE);
   const user = users.find(u => u.email === email);
   
   if (!user) {
-    return res.status(401).json({ error: 'Credenciais invalidas' });
+    return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 
   try {
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      return res.status(401).json({ error: 'Credenciais invalidas' });
+      return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    // JWT valido por 8 horas
+    // JWT válido por 8 horas
     const token = jwt.sign(
       { userId: user.userId, name: user.name, email: user.email },
       SECRET_KEY,
@@ -122,7 +122,7 @@ app.post('/api/auth/logout', authenticateToken, (req, res) => {
   res.json({ message: 'Logout realizado com sucesso' });
 });
 
-// Middleware de Autenticacao
+// Middleware de Autenticação
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Formato: Bearer <token>
@@ -131,11 +131,11 @@ function authenticateToken(req, res, next) {
 
   const revoked = readJSON(REVOKED_TOKENS_FILE);
   if (revoked.includes(token)) {
-    return res.status(401).json({ error: 'Token revogado. Por favor, faca o login novamente.' });
+    return res.status(401).json({ error: 'Token revogado. Por favor, faça o login novamente.' });
   }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Token invalido ou expirado' });
+    if (err) return res.status(403).json({ error: 'Token inválido ou expirado' });
     req.user = user;
     next();
   });
@@ -148,14 +148,14 @@ function authenticateToken(req, res, next) {
 // Listar Tarefas (calculando isOverdue)
 app.get('/api/tasks', authenticateToken, (req, res) => {
   const allTasks = readJSON(TASKS_FILE);
-  // Retornar apenas tarefas do usuario autenticado
+  // Retornar apenas tarefas do usuário autenticado
   const userTasks = allTasks.filter(t => t.userId === req.user.userId);
   
   const now = new Date();
   
   const tasksWithOverdue = userTasks.map(task => {
     let isOverdue = false;
-    // Uma tarefa esta em atraso se: dueDate existe, dueDate < new Date() e completed === false
+    // Uma tarefa está em atraso se: dueDate existe, dueDate < new Date() e completed === false
     if (task.dueDate && !task.completed) {
       const dueDate = new Date(task.dueDate);
       if (dueDate < now) {
@@ -172,11 +172,11 @@ app.get('/api/tasks', authenticateToken, (req, res) => {
 app.post('/api/tasks', authenticateToken, (req, res) => {
   const { title, description, status, dueDate, priority } = req.body;
   
-  if (!title) return res.status(400).json({ error: 'O titulo e obrigatorio' });
+  if (!title) return res.status(400).json({ error: 'O título é obrigatório' });
 
   const tasks = readJSON(TASKS_FILE);
   const newTask = {
-    id: Date.now().toString(), // id unico
+    id: Date.now().toString(), // id único
     userId: req.user.userId,
     title,
     description: description || '',
@@ -199,9 +199,9 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
   const tasks = readJSON(TASKS_FILE);
   const taskIndex = tasks.findIndex(t => t.id === req.params.id);
 
-  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa nao encontrada' });
-  // Garantir que a tarefa pertence ao usuario autenticado
-  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Nao autorizado' });
+  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa não encontrada' });
+  // Garantir que a tarefa pertence ao usuário autenticado
+  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Não autorizado' });
 
   tasks[taskIndex] = {
     ...tasks[taskIndex],
@@ -222,26 +222,26 @@ app.delete('/api/tasks/:id', authenticateToken, (req, res) => {
   let tasks = readJSON(TASKS_FILE);
   const taskIndex = tasks.findIndex(t => t.id === req.params.id);
 
-  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa nao encontrada' });
-  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Nao autorizado' });
+  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa não encontrada' });
+  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Não autorizado' });
 
   tasks = tasks.filter(t => t.id !== req.params.id);
   writeJSON(TASKS_FILE, tasks);
-  res.json({ message: 'Tarefa excluida' });
+  res.json({ message: 'Tarefa excluída' });
 });
 
 // Atualizar Apenas o Status (para Drag & Drop)
 app.patch('/api/tasks/:id/status', authenticateToken, (req, res) => {
   const { status } = req.body;
   if (!['todo', 'doing', 'done'].includes(status)) {
-    return res.status(400).json({ error: 'Status invalido' });
+    return res.status(400).json({ error: 'Status inválido' });
   }
 
   const tasks = readJSON(TASKS_FILE);
   const taskIndex = tasks.findIndex(t => t.id === req.params.id);
 
-  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa nao encontrada' });
-  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Nao autorizado' });
+  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa não encontrada' });
+  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Não autorizado' });
 
   tasks[taskIndex].status = status;
   tasks[taskIndex].updatedAt = new Date().toISOString();
@@ -255,8 +255,8 @@ app.patch('/api/tasks/:id/complete', authenticateToken, (req, res) => {
   const tasks = readJSON(TASKS_FILE);
   const taskIndex = tasks.findIndex(t => t.id === req.params.id);
 
-  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa nao encontrada' });
-  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Nao autorizado' });
+  if (taskIndex === -1) return res.status(404).json({ error: 'Tarefa não encontrada' });
+  if (tasks[taskIndex].userId !== req.user.userId) return res.status(403).json({ error: 'Não autorizado' });
 
   tasks[taskIndex].completed = !tasks[taskIndex].completed;
   tasks[taskIndex].updatedAt = new Date().toISOString();
@@ -266,5 +266,5 @@ app.patch('/api/tasks/:id/complete', authenticateToken, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

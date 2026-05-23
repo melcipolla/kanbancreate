@@ -3,6 +3,6 @@ node_modules/
 .agent/
 
 
-# Logs e dependencias de SO
+# Logs e dependências de SO
 npm-debug.log
 .DS_Store
